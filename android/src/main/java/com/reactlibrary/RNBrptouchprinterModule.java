@@ -12,11 +12,13 @@ import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.uimanager.IllegalViewOperationException;
 
-
 import android.graphics.Bitmap;
 import android.graphics.Paint;
 import android.graphics.Color;
 import android.graphics.Canvas;
+import android.bluetooth.BluetoothAdapter;
+import android.os.Build;
+import android.os.Environment;
 
 import com.brother.ptouch.sdk.LabelInfo;
 import com.brother.ptouch.sdk.Printer;
@@ -32,142 +34,129 @@ import org.json.JSONException;
 
 import java.util.Iterator;
 import com.google.gson.Gson;
-
+import java.io.File;
 
 public class RNBrptouchprinterModule extends ReactContextBaseJavaModule {
 
-  private final ReactApplicationContext reactContext;
+    private final ReactApplicationContext reactContext;
     Bitmap ImageToPrint;
-
 
     PrinterStatus printResult;
 
-  public RNBrptouchprinterModule(ReactApplicationContext reactContext) {
-    super(reactContext);
-    this.reactContext = reactContext;
-  }
+    public RNBrptouchprinterModule(ReactApplicationContext reactContext) {
+        super(reactContext);
+        this.reactContext = reactContext;
+    }
 
-  @Override
-  public String getName() {
-    return "RNBrptouchprinter";
-  }
+    @Override
+    public String getName() {
+        return "RNBrptouchprinter";
+    }
+
+    protected class PrinterThread extends Thread {
+        @Override
+        public void run() {
+            // print
+            // tobe removed
+            Printer myPrinter = new Printer();
+            printResult = new PrinterStatus();
+            // call startCommunication prior to PrintImage or other print functions to open
+            // a socket connection
+            // and keep the number connections to one
+            myPrinter.startCommunication();
+            // call printImage to print a Bitmap
+            printResult = myPrinter.printImage(ImageToPrint);
+            if (printResult.errorCode != PrinterInfo.ErrorCode.ERROR_NONE) {
+                // add an alert message if you want
+            }
+            // When done printing call endCommunication
+            myPrinter.endCommunication();
+        }
+    }
 
     public Bitmap textAsBitmap(String text, float textSize, int textColor) {
         Paint paint = new Paint();
         paint.setTextSize(textSize);
         paint.setColor(Color.WHITE);
         paint.setTextAlign(Paint.Align.LEFT);
-        float baseline = -paint.ascent(); //ascent is negative
-        int width = (int) (paint.measureText(text) + 0.5f); //round
+        float baseline = -paint.ascent(); // ascent is negative
+        int width = (int) (paint.measureText(text) + 0.5f); // round
         int height = (int) (baseline + paint.descent() + 0.5f);
-        Bitmap image =  Bitmap.createBitmap(width + 500, height + 350, Bitmap.Config.ARGB_8888);
+        Bitmap image = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(image);
-        canvas.drawRect(0, 0, width + 500, height + 350, paint);
+        canvas.drawRect(0, 0, width, height, paint);
         paint.setColor(textColor);
         canvas.drawText(text, 0, baseline, paint);
         return image;
     }
 
-    protected class PrinterThread extends Thread {
-        @Override
-        public void run() {
-            //print
-            //tobe removed
-            Printer myPrinter = new Printer();
-            printResult = new PrinterStatus();
-            //call startCommunication prior to PrintImage or other print functions to open a socket connection
-            //and keep the number connections to one
-            myPrinter.startCommunication();
-            //call printImage to print a Bitmap
-            printResult = myPrinter.printImage(ImageToPrint);
-            if(printResult.errorCode != PrinterInfo.ErrorCode.ERROR_NONE) {
-                //add an alert message if you want
+    @ReactMethod
+    public void print(String macAddress, String pdfPath, String labelType, final Promise promise) {
+        Thread th = new Thread(() -> {
+            try {
+                Printer myPrinter = new Printer();
+                PrinterInfo myPrinterInfo = new PrinterInfo();
+                // set printer information
+                myPrinterInfo = myPrinter.getPrinterInfo();
+
+                myPrinterInfo.printerModel = PrinterInfo.Model.QL_820NWB;
+                myPrinter.setBluetooth(BluetoothAdapter.getDefaultAdapter());
+                myPrinterInfo.port = PrinterInfo.Port.BLUETOOTH;
+
+                myPrinterInfo.macAddress = macAddress;
+                myPrinterInfo.labelNameIndex = LabelInfo.QL700.valueOf(labelType).ordinal();
+                myPrinterInfo.orientation = PrinterInfo.Orientation.PORTRAIT;
+                myPrinterInfo.printMode = PrinterInfo.PrintMode.FIT_TO_PAPER;
+                myPrinterInfo.halftone = PrinterInfo.Halftone.THRESHOLD;
+                myPrinterInfo.isAutoCut = false;
+                myPrinterInfo.isCutAtEnd = false;
+
+                myPrinter.setPrinterInfo(myPrinterInfo);
+                myPrinter.startCommunication();
+
+                int pages = getPdfPages(myPrinter, pdfPath);
+
+                for (int i = 1; i <= pages; i++) {
+                    printResult = myPrinter.printPdfFile(pdfPath, i);
+                    if (printResult.errorCode != PrinterInfo.ErrorCode.ERROR_NONE) {
+                        // add an alert message if you want
+                        promise.resolve(printResult.errorCode.toString());
+                    }
+                }
+
+                // //When done printing call endCommunication
+                myPrinter.endCommunication();
+                promise.resolve("Printing done!");
+            } catch (Exception e) {
+                promise.reject("error", e);
             }
-            //When done printing call endCommunication
-            myPrinter.endCommunication();
-        }
+
+        });
+        th.start();
     }
 
     @ReactMethod
-    public void print(String ipAddress, String name, String position, String company, final Promise promise) {
-        /*Thread trd = new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-            }
-        });*/
-        Printer myPrinter = new Printer();
-        //create printer info
-        PrinterInfo myPrinterInfo = new PrinterInfo();
-        try{
-            //set printer information
-            myPrinterInfo = myPrinter.getPrinterInfo();
-            myPrinterInfo.printerModel   = PrinterInfo.Model.QL_720NW;
-            myPrinterInfo.port           = PrinterInfo.Port.NET;
-            myPrinterInfo.printMode      = PrinterInfo.PrintMode.FIT_TO_PAGE;
-            myPrinterInfo.orientation    = PrinterInfo.Orientation.LANDSCAPE;
-            myPrinterInfo.paperSize      = PrinterInfo.PaperSize.CUSTOM;
-            myPrinterInfo.ipAddress      = ipAddress;
-            myPrinterInfo.labelNameIndex = LabelInfo.QL700.valueOf("W38H90").ordinal();
-            myPrinterInfo.isAutoCut      = true;
-            myPrinterInfo.isCutAtEnd     = true;
-            myPrinterInfo.isHalfCut      = false;
-            myPrinterInfo.isSpecialTape  = false;
-            myPrinter.setPrinterInfo(myPrinterInfo);
-
-            String FullName = "M Syazwan Ahmad";
-            ImageToPrint = textAsBitmap(FullName, 96, Color.BLACK);
-            printResult = new PrinterStatus();
-            //call startCommunication prior to PrintImage or other print functions to open a socket connection
-            //and keep the number connections to one
-            myPrinter.startCommunication();
-            //call printImage to print a Bitmap
-            printResult = myPrinter.printImage(ImageToPrint);
-            if(printResult.errorCode != PrinterInfo.ErrorCode.ERROR_NONE) {
-                //add an alert message if you want
-                promise.resolve(printResult.errorCode.toString());
-            }
-            else{
-                promise.resolve("Printing started!");
-            }
-            //When done printing call endCommunication
-            //myPrinter.endCommunication();
-        }
-        catch(Exception e)
-        {
-            promise.reject("error", e);
-        }
-        //run printing on a thread
-        //PrinterThread printThread = new PrinterThread();
-        //printThread.run();
-
-        //trd.start();
-    }
-
-    @ReactMethod
-    public void getConnectedPrinters(Promise promise)
-    {
+    public void getConnectedPrinters(Promise promise) {
         Gson gson = new Gson();
         Printer myPrinter = new Printer();
         NetPrinter[] net_printers = myPrinter.getNetPrinters("QL-720NW");
-        try{
+        try {
             WritableArray array = new WritableNativeArray();
-            for(NetPrinter net_printer : net_printers) {
+            for (NetPrinter net_printer : net_printers) {
                 WritableMap netPrinterDictionary = convertJsonToMap(new JSONObject(gson.toJson(net_printer)));
                 array.pushMap(netPrinterDictionary);
             }
             promise.resolve(array);
-        }catch(JSONException e)
-        {
-            promise.reject("",e);
+        } catch (JSONException e) {
+            promise.reject("", e);
         }
     }
 
     @ReactMethod
     public void concatStr(
-                          String string1,
-                          String string2,
-                          Promise promise) {
+            String string1,
+            String string2,
+            Promise promise) {
         promise.resolve(string1 + " jhj" + string2);
     }
 
@@ -182,7 +171,7 @@ public class RNBrptouchprinterModule extends ReactContextBaseJavaModule {
                 map.putMap(key, convertJsonToMap((JSONObject) value));
             } else if (value instanceof JSONArray) {
                 map.putArray(key, convertJsonToArray((JSONArray) value));
-                if(("option_values").equals(key)) {
+                if (("option_values").equals(key)) {
                     map.putArray("options", convertJsonToArray((JSONArray) value));
                 }
             } else if (value instanceof Boolean) {
@@ -191,7 +180,7 @@ public class RNBrptouchprinterModule extends ReactContextBaseJavaModule {
                 map.putInt(key, (Integer) value);
             } else if (value instanceof Double) {
                 map.putDouble(key, (Double) value);
-            } else if (value instanceof String)  {
+            } else if (value instanceof String) {
                 map.putString(key, (String) value);
             } else {
                 map.putString(key, value.toString());
@@ -215,12 +204,35 @@ public class RNBrptouchprinterModule extends ReactContextBaseJavaModule {
                 array.pushInt((Integer) value);
             } else if (value instanceof Double) {
                 array.pushDouble((Double) value);
-            } else if (value instanceof String)  {
+            } else if (value instanceof String) {
                 array.pushString((String) value);
             } else {
                 array.pushString(value.toString());
             }
         }
         return array;
+    }
+
+    private int getPdfPages(Printer printer, String pdfPath) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            return printer.getPDFPages(pdfPath);
+        } else {
+            return printer.getPDFFilePages(pdfPath);
+        }
+    }
+
+    private void printLabels(String pdfPath, Printer printer) {
+        int pages = getPdfPages(printer, pdfPath);
+
+        try {
+            if (printer.startCommunication()) {
+                for (int i = 0; i < pages; i++) {
+                    printer.printPdfFile(pdfPath, i);
+                }
+                printer.endCommunication();
+            }
+        } catch (Exception e) {
+            throw e;
+        }
     }
 }

@@ -1,0 +1,33 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /Users/miucinsebastian/Projects/tazz-partner-app/node_modules/react-native-brptouchprinter/android/src/main/AndroidManifest.xml:2:1-9:12
+INJECTED from /Users/miucinsebastian/Projects/tazz-partner-app/node_modules/react-native-brptouchprinter/android/src/main/AndroidManifest.xml:2:1-9:12
+INJECTED from /Users/miucinsebastian/Projects/tazz-partner-app/node_modules/react-native-brptouchprinter/android/src/main/AndroidManifest.xml:2:1-9:12
+	package
+		ADDED from /Users/miucinsebastian/Projects/tazz-partner-app/node_modules/react-native-brptouchprinter/android/src/main/AndroidManifest.xml:3:11-37
+		INJECTED from /Users/miucinsebastian/Projects/tazz-partner-app/node_modules/react-native-brptouchprinter/android/src/main/AndroidManifest.xml
+		INJECTED from /Users/miucinsebastian/Projects/tazz-partner-app/node_modules/react-native-brptouchprinter/android/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /Users/miucinsebastian/Projects/tazz-partner-app/node_modules/react-native-brptouchprinter/android/src/main/AndroidManifest.xml:2:11-69
+uses-permission#android.permission.INTERNET
+ADDED from /Users/miucinsebastian/Projects/tazz-partner-app/node_modules/react-native-brptouchprinter/android/src/main/AndroidManifest.xml:5:11-73
+	android:name
+		ADDED from /Users/miucinsebastian/Projects/tazz-partner-app/node_modules/react-native-brptouchprinter/android/src/main/AndroidManifest.xml:5:28-70
+uses-permission#android.permission.WRITE_EXTERNAL_STORAGE
+ADDED from /Users/miucinsebastian/Projects/tazz-partner-app/node_modules/react-native-brptouchprinter/android/src/main/AndroidManifest.xml:6:11-87
+	android:name
+		ADDED from /Users/miucinsebastian/Projects/tazz-partner-app/node_modules/react-native-brptouchprinter/android/src/main/AndroidManifest.xml:6:28-84
+uses-sdk
+INJECTED from /Users/miucinsebastian/Projects/tazz-partner-app/node_modules/react-native-brptouchprinter/android/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /Users/miucinsebastian/Projects/tazz-partner-app/node_modules/react-native-brptouchprinter/android/src/main/AndroidManifest.xml
+INJECTED from /Users/miucinsebastian/Projects/tazz-partner-app/node_modules/react-native-brptouchprinter/android/src/main/AndroidManifest.xml
+INJECTED from /Users/miucinsebastian/Projects/tazz-partner-app/node_modules/react-native-brptouchprinter/android/src/main/AndroidManifest.xml
+INJECTED from /Users/miucinsebastian/Projects/tazz-partner-app/node_modules/react-native-brptouchprinter/android/src/main/AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from /Users/miucinsebastian/Projects/tazz-partner-app/node_modules/react-native-brptouchprinter/android/src/main/AndroidManifest.xml
+		ADDED from /Users/miucinsebastian/Projects/tazz-partner-app/node_modules/react-native-brptouchprinter/android/src/main/AndroidManifest.xml
+		INJECTED from /Users/miucinsebastian/Projects/tazz-partner-app/node_modules/react-native-brptouchprinter/android/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /Users/miucinsebastian/Projects/tazz-partner-app/node_modules/react-native-brptouchprinter/android/src/main/AndroidManifest.xml
+		ADDED from /Users/miucinsebastian/Projects/tazz-partner-app/node_modules/react-native-brptouchprinter/android/src/main/AndroidManifest.xml
+		INJECTED from /Users/miucinsebastian/Projects/tazz-partner-app/node_modules/react-native-brptouchprinter/android/src/main/AndroidManifest.xml
