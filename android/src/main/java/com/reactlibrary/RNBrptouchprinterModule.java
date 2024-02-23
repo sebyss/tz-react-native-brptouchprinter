@@ -120,7 +120,7 @@ public class RNBrptouchprinterModule extends ReactContextBaseJavaModule {
                     printResult = myPrinter.printPdfFile(pdfPath, i);
                     if (printResult.errorCode != PrinterInfo.ErrorCode.ERROR_NONE) {
                         // add an alert message if you want
-                        promise.resolve(printResult.errorCode.toString());
+                        promise.reject(printResult.errorCode.toString());
                     }
                 }
 
