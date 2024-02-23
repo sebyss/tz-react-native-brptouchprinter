@@ -91,7 +91,7 @@ public class RNBrptouchprinterModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void print(String macAddress, String pdfPath, String labelType, final Promise promise) {
+    public void print(String macAddress, String pdfPath, String labelType, boolean isAutoCut, boolean isCutAtEnd, final Promise promise) {
         Thread th = new Thread(() -> {
             try {
                 Printer myPrinter = new Printer();
@@ -108,8 +108,8 @@ public class RNBrptouchprinterModule extends ReactContextBaseJavaModule {
                 myPrinterInfo.orientation = PrinterInfo.Orientation.PORTRAIT;
                 myPrinterInfo.printMode = PrinterInfo.PrintMode.FIT_TO_PAPER;
                 myPrinterInfo.halftone = PrinterInfo.Halftone.THRESHOLD;
-                myPrinterInfo.isAutoCut = false;
-                myPrinterInfo.isCutAtEnd = false;
+                myPrinterInfo.isAutoCut = isAutoCut;
+                myPrinterInfo.isCutAtEnd = isCutAtEnd;
 
                 myPrinter.setPrinterInfo(myPrinterInfo);
                 myPrinter.startCommunication();
