@@ -1,5 +1,5 @@
 {
-  "name": "react-native-brptouchprinter",
+  "name": "@sebyss/tz-react-native-brptouchprinter",
   "version": "1.0.0",
   "description": "## Getting started",
   "main": "index.js",
@@ -8,17 +8,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ahmadms1/react-native-brptouchprinter.git"
+    "url": "git+https://github.com/sebyss/tz-react-native-brptouchprinter.git"
   },
-  "author": "Muhammad Syazwan Ahmad <msyazwan.ahmad92@gmail.com>",
+  "author": "Miucin Sebastian <sebastian.miucin96@gmail.com>",
   "license": "MIT",
   "peerDependencies": {
     "react-native": "^0.41.2"
   },
   "bugs": {
-    "url": "https://github.com/ahmadms1/react-native-brptouchprinter/issues"
+    "url": "https://github.com/sebyss/tz-react-native-brptouchprinter/issues"
   },
-  "homepage": "https://github.com/ahmadms1/react-native-brptouchprinter#readme",
+  "homepage": "https://github.com/sebyss/tz-react-native-brptouchprinter#readme",
   "dependencies": {},
   "devDependencies": {},
   "keywords": [

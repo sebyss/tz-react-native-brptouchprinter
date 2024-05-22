@@ -1,4 +1,3 @@
-
 # react-native-brptouchprinter
 
 ## Getting started
@@ -42,4 +41,6 @@ import RNBrptouchprinter from 'react-native-brptouchprinter';
 // TODO: What to do with the module?
 RNBrptouchprinter;
 ```
-  
+
+# Important
+This is a fork of `react-native-brptouchprinter`
