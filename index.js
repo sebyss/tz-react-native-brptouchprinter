@@ -5,8 +5,8 @@ const { RNBrptouchprinter } = NativeModules;
 const component = NativeModules.RNBrptouchprinter;
 
 class BRPtouchPrinter {
-	async print(macAddress, pdfPath, labelType, isAutoCut, isCutAtEnd) {
-		return await component.print(macAddress, pdfPath, labelType, isAutoCut, isCutAtEnd);
+	async print(macAddress, pdfPath, workPath, labelType, isAutoCut, isCutAtEnd) {
+		return await component.print(macAddress, pdfPath, workPath, labelType, isAutoCut, isCutAtEnd);
 	}
 
 	async getConnectedPrinters() {

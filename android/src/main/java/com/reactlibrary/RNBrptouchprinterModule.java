@@ -28,6 +28,16 @@ import com.brother.ptouch.sdk.PrinterInfo.Model;
 import com.brother.ptouch.sdk.PrinterStatus;
 import com.brother.ptouch.sdk.NetPrinter;
 
+import com.brother.sdk.lmprinter.Channel;
+import com.brother.sdk.lmprinter.PrinterDriverGenerator;
+import com.brother.sdk.lmprinter.PrinterDriverGenerateResult;
+import com.brother.sdk.lmprinter.PrintError;
+import com.brother.sdk.lmprinter.Log;
+import com.brother.sdk.lmprinter.OpenChannelError;
+import com.brother.sdk.lmprinter.PrinterDriver;
+import com.brother.sdk.lmprinter.PrinterModel;
+import com.brother.sdk.lmprinter.setting.QLPrintSettings;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONException;
@@ -91,42 +101,76 @@ public class RNBrptouchprinterModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void print(String macAddress, String pdfPath, String labelType, boolean isAutoCut, boolean isCutAtEnd, final Promise promise) {
+    public void print(String macAddress, String pdfPath, String workPath, String labelType, boolean isAutoCut,
+            boolean isCutAtEnd,
+            final Promise promise) {
         Thread th = new Thread(() -> {
             try {
-                Printer myPrinter = new Printer();
-                PrinterInfo myPrinterInfo = new PrinterInfo();
-                // set printer information
-                myPrinterInfo = myPrinter.getPrinterInfo();
+                // Printer myPrinter = new Printer();
+                // javax.print.attribute.standard.PrinterInfo myPrinterInfo = new PrinterInfo();
+                // // set printer information
+                // myPrinterInfo = myPrinter.getPrinterInfo();
 
-                myPrinterInfo.printerModel = PrinterInfo.Model.QL_820NWB;
-                myPrinter.setBluetooth(BluetoothAdapter.getDefaultAdapter());
-                myPrinterInfo.port = PrinterInfo.Port.BLUETOOTH;
+                // myPrinterInfo.printerModel = PrinterInfo.Model.QL_820NWB;
+                // myPrinter.setBluetooth(BluetoothAdapter.getDefaultAdapter());
+                // myPrinterInfo.port = PrinterInfo.Port.BLUETOOTH;
 
-                myPrinterInfo.macAddress = macAddress;
-                myPrinterInfo.labelNameIndex = LabelInfo.QL700.valueOf(labelType).ordinal();
-                myPrinterInfo.orientation = PrinterInfo.Orientation.PORTRAIT;
-                myPrinterInfo.printMode = PrinterInfo.PrintMode.FIT_TO_PAPER;
-                myPrinterInfo.halftone = PrinterInfo.Halftone.THRESHOLD;
-                myPrinterInfo.isAutoCut = isAutoCut;
-                myPrinterInfo.isCutAtEnd = isCutAtEnd;
+                // myPrinterInfo.macAddress = macAddress;
+                // myPrinterInfo.labelNameIndex = LabelInfo.QL700.valueOf(labelType).ordinal();
+                // myPrinterInfo.orientation = PrinterInfo.Orientation.PORTRAIT;
+                // myPrinterInfo.printMode = PrinterInfo.PrintMode.FIT_TO_PAPER;
+                // myPrinterInfo.halftone = PrinterInfo.Halftone.THRESHOLD;
+                // myPrinterInfo.isAutoCut = isAutoCut;
+                // myPrinterInfo.isCutAtEnd = isCutAtEnd;
+                // myPrinterInfo.workPath = pdfPath.toString();
 
-                myPrinter.setPrinterInfo(myPrinterInfo);
-                myPrinter.startCommunication();
+                // promise.resolve(myPrinterInfo.toString());
+                // myPrinter.setPrinterInfo(myPrinterInfo);
 
-                int pages = getPdfPages(myPrinter, pdfPath);
+                // myPrinter.startCommunication();
+                // int pages = getPdfPages(myPrinter, pdfPath);
 
-                for (int i = 1; i <= pages; i++) {
-                    printResult = myPrinter.printPdfFile(pdfPath, i);
-                    if (printResult.errorCode != PrinterInfo.ErrorCode.ERROR_NONE) {
-                        // add an alert message if you want
-                        promise.reject(printResult.errorCode.toString());
-                    }
+                // for (int i = 1; i <= pages; i++) {
+                // printResult = myPrinter.printPdfFile(pdfPath, i);
+                // if (printResult.errorCode != PrinterInfo.ErrorCode.ERROR_NONE) {
+                // // add an alert message if you want
+                // promise.reject(printResult.errorCode.toString());
+                // }
+                // }
+
+                // // //When done printing call endCommunication
+                // myPrinter.endCommunication();
+                // promise.resolve("Printing done!");
+
+                // ==================================
+
+                Channel channel = Channel.newBluetoothChannel(macAddress, BluetoothAdapter.getDefaultAdapter());
+
+                PrinterDriverGenerateResult result = PrinterDriverGenerator.openChannel(channel);
+
+                if (result.getError().getCode() != OpenChannelError.ErrorCode.NoError) {
+                    promise.reject("Error - Open Channel: " + result.getError().getCode());
+                    return;
                 }
 
-                // //When done printing call endCommunication
-                myPrinter.endCommunication();
-                promise.resolve("Printing done!");
+                PrinterDriver printerDriver = result.getDriver();
+
+                QLPrintSettings printSettings = new QLPrintSettings(PrinterModel.QL_820NWB);
+
+                printSettings.setLabelSize(QLPrintSettings.LabelSize.DieCutW62H29);
+                printSettings.setAutoCut(true);
+                printSettings.setWorkPath(workPath);
+
+                PrintError printError = printerDriver.printPDF(pdfPath, printSettings);
+
+                if (printError.getCode() != PrintError.ErrorCode.NoError) {
+                    promise.reject("Error - Print Image: " + printError.getCode());
+                } else {
+                    promise.resolve("Success - Print Image");
+                }
+
+                printerDriver.closeChannel();
+
             } catch (Exception e) {
                 promise.reject("error", e);
             }
@@ -214,11 +258,7 @@ public class RNBrptouchprinterModule extends ReactContextBaseJavaModule {
     }
 
     private int getPdfPages(Printer printer, String pdfPath) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            return printer.getPDFPages(pdfPath);
-        } else {
-            return printer.getPDFFilePages(pdfPath);
-        }
+        return printer.getPDFFilePages(pdfPath);
     }
 
     private void printLabels(String pdfPath, Printer printer) {
